@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Juego de léxico sanitario</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #222;
+    color: white;
+}
+
+/* INICIO */
+#inicio {
+    text-align: center;
+    padding: 40px;
+}
+
+.logo {
+    width: 160px;
+    margin: 20px auto;
+    display: block;
+}
+
+button {
+    padding: 10px 15px;
+    cursor: pointer;
+}
+
+/* JUEGO */
+#juego {
+    display: none;
+    padding: 10px;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+#info {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* TABLERO */
+#tablero {
+    display: grid;
+    height: calc(100vh - 120px);
+    max-width: 900px;
+    margin: auto;
+    gap: 8px;
+}
+
+/* CARTAS */
+.carta {
+    border-radius: 10px;
+    border: 2px solid black;
+    background-image: url("trasera.png");
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    cursor: pointer;
+}
+
+.carta span {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    color: black;
+    border-radius: 10px;
+    opacity: 0;
+    pointer-events: none;
+    text-align: center;
+    padding: 4px;
+    font-size: 0.75rem;
+}
+
+.carta.girada span {
+    opacity: 1;
+}
+
+/* FINAL */
+#final {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    color: black;
+    padding: 25px;
+    border-radius: 10px;
+    text-align: center;
+    width: 350px;
+    max-height: 80vh;
+    overflow: auto;
+}
+
+#final img {
+    width: 100px;
+    margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- INICIO -->
+<div id="inicio">
+<h1>Juego de léxico sanitario</h1>
+
+<img src="logo.png" class="logo">
+
+<p>Empareja elementos léxicos con su significado</p>
+
+<select id="nivel">
+    <option value="6">Fácil (6 parejas)</option>
+    <option value="15">Medio (15 parejas)</option>
+    <option value="36">Difícil (36 parejas)</option>
+</select>
+
+<br><br>
+<button onclick="iniciarJuego()">🎮 Jugar</button>
+</div>
+
+<!-- JUEGO -->
+<div id="juego">
+<div id="info">
+Giros: <span id="movimientos">0</span> |
+Puntos: <span id="puntos">0</span>
+</div>
+
+<div id="tablero"></div>
+</div>
+
+<!-- FINAL -->
+<div id="final"></div>
+
+<script>
+
+let primera=null;
+let segunda=null;
+let bloqueado=false;
+
+let aciertos=0;
+let total=0;
+
+let movimientos=0;
+let puntos=0;
+let intentos=0;
+
+let usadas=[];
+
+/* ✅ BASE COMPLETA */
+let baseDatos = [
+
+["a-, an-","sin, ausencia"],
+["hipo-","por debajo"],
+["hiper-","exceso"],
+["bradi-","lento"],
+["taqui-","rápido"],
+["intra-","dentro"],
+["inter-","entre"],
+["peri-","alrededor"],
+["retro-","detrás"],
+["epi-","sobre"],
+["trans-","a través"],
+["sub-","debajo"],
+["supra-","encima"],
+["endo-","dentro"],
+["ecto-","fuera"],
+["micro-","pequeño"],
+["macro-","grande"],
+["mono-","uno"],
+["bi-","dos"],
+["tri-","tres"],
+["poli-","muchos"],
+["pre-","antes"],
+["post-","después"],
+["anti-","contra"],
+["auto-","propio"],
+
+["cardio-","corazón"],
+["dermo-","piel"],
+["hepato-","hígado"],
+["neumo-","pulmón"],
+["gastro-","estómago"],
+["nefro-","riñón"],
+["neuro-","sistema nervioso"],
+["osteo-","hueso"],
+["artro-","articulación"],
+["angio-","vasos"],
+["hemo-","sangre"],
+["rino-","nariz"],
+["oto-","oído"],
+["oftalmo-","ojo"],
+["odonto-","diente"],
+["mi/o-","músculo"],
+["lip/o-","grasa"],
+["aden/o-","glándula"],
+["cefalo-","cabeza"],
+
+["cian/o","azul"],
+["eritro","rojo"],
+["melan/o","negro"],
+["leuc/o","blanco"],
+["xant/o","amarillo"],
+
+["-itis","inflamación"],
+["-algia","dolor"],
+["-oma","tumor"],
+["-osis","anormal"],
+["-ectomía","extirpación"],
+["-tomía","incisión"],
+["-scopia","exploración"],
+["-grafía","registro"],
+["-logía","estudio"],
+["-emia","sangre"],
+["-uria","orina"],
+["-patía","enfermedad"],
+["-terapia","tratamiento"],
+["-megalia","agrandamiento"],
+["-penia","disminución"]
+
+];
+
+function iniciarJuego(){
+
+    document.getElementById("inicio").style.display="none";
+    document.getElementById("juego").style.display="block";
+
+    let tablero=document.getElementById("tablero");
+    tablero.innerHTML="";
+    document.getElementById("final").style.display="none";
+
+    movimientos=0;
+    puntos=0;
+    intentos=0;
+    aciertos=0;
+
+    actualizarInfo();
+
+    let nivel=parseInt(document.getElementById("nivel").value);
+    total=nivel;
+
+    /* ✅ GARANTIZA SIEMPRE 36 PAREJAS EN DIFÍCIL */
+    let seleccion=mezclar([...baseDatos]).slice(0,total);
+
+    usadas=seleccion;
+
+    let cartas=[];
+
+    seleccion.forEach(par=>{
+        cartas.push({valor:par[0], pareja:par[1]});
+        cartas.push({valor:par[1], pareja:par[0]});
+    });
+
+    cartas=mezclar(cartas);
+
+    let cols = Math.ceil(Math.sqrt(cartas.length));
+    let filas = Math.ceil(cartas.length / cols);
+
+    tablero.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+    tablero.style.gridTemplateRows=`repeat(${filas},1fr)`;
+
+    cartas.forEach(dato=>{
+        let carta=document.createElement("div");
+        carta.className="carta";
+
+        carta.dataset.valor=dato.valor;
+        carta.dataset.pareja=dato.pareja;
+
+        let texto=document.createElement("span");
+        texto.textContent=dato.valor;
+
+        carta.appendChild(texto);
+        carta.onclick=()=>girar(carta);
+
+        tablero.appendChild(carta);
+    });
+}
+
+function girar(carta){
+
+    if(bloqueado) return;
+    if(carta.classList.contains("girada")) return;
+
+    carta.classList.add("girada");
+    movimientos++;
+    actualizarInfo();
+
+    if(!primera){
+        primera=carta;
+        return;
+    }
+
+    segunda=carta;
+    comprobar();
+}
+
+function comprobar(){
+
+    bloqueado=true;
+    intentos++;
+
+    if(primera.dataset.pareja===segunda.dataset.valor){
+        puntos+=10;
+        aciertos++;
+
+        setTimeout(()=>{
+            primera.style.visibility="hidden";
+            segunda.style.visibility="hidden";
+
+            if(aciertos===total){
+                finalJuego();
+            }
+
+            reset();
+        },400);
+
+    } else {
+
+        puntos-=3;
+
+        setTimeout(()=>{
+            primera.classList.remove("girada");
+            segunda.classList.remove("girada");
+            reset();
+        },800);
+    }
+
+    actualizarInfo();
+}
+
+function reset(){
+    primera=null;
+    segunda=null;
+    bloqueado=false;
+}
+
+function actualizarInfo(){
+    document.getElementById("movimientos").textContent=movimientos;
+    document.getElementById("puntos").textContent=puntos;
+}
+
+function finalJuego(){
+
+    let final=document.getElementById("final");
+
+    let porcentaje = Math.round((aciertos/intentos)*100);
+
+    final.innerHTML="<h2>🎉 Resultado</h2>";
+    final.innerHTML+='<img src="logo.png">';
+
+    final.innerHTML+=`<p><b>Puntos:</b> ${puntos}</p>`;
+    final.innerHTML+=`<p><b>Giros:</b> ${movimientos}</p>`;
+    final.innerHTML+=`<p><b>Acierto:</b> ${porcentaje}%</p>`;
+
+    final.innerHTML+="<h3>Repaso</h3>";
+
+    usadas.forEach(p=>{
+        final.innerHTML+=`<p><b>${p[0]}</b> → ${p[1]}</p>`;
+    });
+
+    final.innerHTML+="<br><button onclick='location.reload()'>Reiniciar</button>";
+
+    final.style.display="block";
+}
+
+function mezclar(arr){
+    return arr.sort(()=>Math.random()-0.5);
+}
+
+</script>
+
+</body>
+</html>
