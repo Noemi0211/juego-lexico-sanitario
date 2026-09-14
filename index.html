@@ -5,81 +5,251 @@
 <title>Juego de léxico sanitario</title>
 
 <style>
+:root {
+    --bg: #0f172a;
+    --text: #f8fafc;
+    --muted: #cbd5e1;
+    --accent: #2563eb;
+    --accent-2: #7c3aed;
+}
+
+* { box-sizing: border-box; }
+
 body {
     margin: 0;
-    font-family: Arial;
-    background: #222;
-    color: white;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: radial-gradient(circle at top, #1e3a8a 0%, #0f172a 55%, #020617 100%);
+    color: var(--text);
+    min-height: 100vh;
 }
 
 /* INICIO */
 #inicio {
     text-align: center;
-    padding: 40px;
+    padding: 40px 24px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+}
+
+#inicio h1 {
+    margin: 0;
+    font-size: 2rem;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+
+#inicio p {
+    margin: 0;
+    color: var(--muted);
 }
 
 .logo {
-    width: 160px;
-    margin: 20px auto;
+    width: 170px;
+    margin: 8px auto 6px;
     display: block;
+    filter: drop-shadow(0 10px 24px rgba(0,0,0,0.25));
+}
+
+select,
+button {
+    border: none;
+    border-radius: 999px;
+    padding: 12px 18px;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+select {
+    min-width: 220px;
+    background: rgba(255,255,255,0.14);
+    color: var(--text);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.16);
+}
+
+.nivel-selector {
+    position: relative;
+    width: min(240px, 100%);
+}
+
+.nivel-trigger {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    color: white;
+    background: rgba(255,255,255,0.14);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.16);
+}
+
+.nivel-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    display: none;
+    flex-direction: column;
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(15, 23, 42, 0.96);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.28);
+    z-index: 10;
+}
+
+.nivel-selector.abierto .nivel-menu {
+    display: flex;
+}
+
+.nivel-option {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+    padding: 12px 14px;
+    cursor: pointer;
+}
+
+.nivel-option:hover {
+    background: rgba(255,255,255,0.12);
 }
 
 button {
-    padding: 10px 15px;
+    padding: 12px 24px;
     cursor: pointer;
+    color: white;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35);
+}
+
+button:hover,
+select:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.22);
 }
 
 /* JUEGO */
 #juego {
     display: none;
-    padding: 10px;
-    height: 100vh;
+    padding: 16px;
+    min-height: 100vh;
     box-sizing: border-box;
+    background: linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(2,6,23,0.96) 100%);
 }
 
 #info {
     text-align: center;
-    margin-bottom: 10px;
+    margin: 0 auto 14px;
+    max-width: 900px;
+    padding: 12px 18px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    color: var(--text);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.24);
+    font-weight: 700;
+}
+
+.progreso {
+    max-width: 900px;
+    margin: 0 auto 14px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.1);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.24);
+}
+
+.progreso-barra {
+    width: 100%;
+    height: 10px;
+    background: rgba(255,255,255,0.16);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progreso-barra > div {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transition: width 0.3s ease;
 }
 
 /* TABLERO */
 #tablero {
     display: grid;
     height: calc(100vh - 120px);
-    max-width: 900px;
+    max-width: 960px;
     margin: auto;
-    gap: 8px;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 22px;
+    background: rgba(255,255,255,0.08);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 16px 40px rgba(0,0,0,0.24);
 }
 
 /* CARTAS */
 .carta {
-    border-radius: 10px;
-    border: 2px solid black;
-    background-image: url("trasera.png");
-    background-size: cover;
-    background-position: center;
+    border-radius: 16px;
+    border: 2px solid rgba(255,255,255,0.18);
     position: relative;
     cursor: pointer;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.26);
+    background: transparent;
 }
 
-.carta span {
+.carta:not(.girada):hover {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 14px 24px rgba(0,0,0,0.32);
+    filter: brightness(1.08);
+}
+
+.carta .dorso,
+.carta .cara {
     position: absolute;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: white;
-    color: black;
-    border-radius: 10px;
-    opacity: 0;
-    pointer-events: none;
-    text-align: center;
-    padding: 4px;
-    font-size: 0.75rem;
+    border-radius: 14px;
+    transition: opacity 0.2s ease;
 }
 
-.carta.girada span {
+.carta .dorso {
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.16), rgba(15,23,42,0.16)), url("trasera.png");
+    background-size: cover;
+    background-position: center;
     opacity: 1;
+    z-index: 2;
+}
+
+.carta .cara {
+    background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+    color: #0f172a;
+    text-align: center;
+    padding: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.2;
+    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+    opacity: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.carta.girada .cara {
+    opacity: 1;
+    z-index: 3;
+    pointer-events: auto;
+}
+
+.carta.girada .dorso {
+    opacity: 0;
+    z-index: 1;
 }
 
 /* FINAL */
@@ -92,11 +262,12 @@ button {
     background: white;
     color: black;
     padding: 25px;
-    border-radius: 10px;
+    border-radius: 20px;
     text-align: center;
     width: 350px;
     max-height: 80vh;
     overflow: auto;
+    box-shadow: 0 20px 45px rgba(0,0,0,0.28);
 }
 
 #final img {
@@ -116,10 +287,22 @@ button {
 
 <p>Empareja elementos léxicos con su significado</p>
 
-<select id="nivel">
-    <option value="6">Fácil (6 parejas)</option>
-    <option value="15">Medio (15 parejas)</option>
-    <option value="36">Difícil (36 parejas)</option>
+<div class="nivel-selector" id="nivelSelector">
+    <button id="nivelTrigger" class="nivel-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+        <span id="nivelTexto">Fácil (6 parejas)</span>
+        <span>▾</span>
+    </button>
+    <div class="nivel-menu" role="listbox">
+        <button type="button" class="nivel-option" data-value="6" role="option">Fácil (6 parejas)</button>
+        <button type="button" class="nivel-option" data-value="12" role="option">Medio (12 parejas)</button>
+        <button type="button" class="nivel-option" data-value="24" role="option">Difícil (24 parejas)</button>
+    </div>
+</div>
+
+<select id="nivel" aria-label="Nivel de dificultad" style="display:none;">
+    <option value="6" selected>Fácil (6 parejas)</option>
+    <option value="12">Medio (12 parejas)</option>
+    <option value="24">Difícil (24 parejas)</option>
 </select>
 
 <br><br>
@@ -131,6 +314,12 @@ button {
 <div id="info">
 Giros: <span id="movimientos">0</span> |
 Puntos: <span id="puntos">0</span>
+</div>
+
+<div class="progreso">
+    <div class="progreso-barra">
+        <div id="progresoInterior"></div>
+    </div>
 </div>
 
 <div id="tablero"></div>
@@ -153,6 +342,74 @@ let puntos=0;
 let intentos=0;
 
 let usadas=[];
+let audioContext=null;
+
+function reproducirSonido(tipo){
+    try {
+        if(!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const now=audioContext.currentTime;
+        const oscillator=audioContext.createOscillator();
+        const gain=audioContext.createGain();
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+
+        let frecuencia=440;
+        if(tipo==='acierto') frecuencia=660;
+        if(tipo==='error') frecuencia=220;
+
+        oscillator.type='sine';
+        oscillator.frequency.setValueAtTime(frecuencia, now);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+        oscillator.start(now);
+        oscillator.stop(now + 0.15);
+    } catch (e) {}
+}
+
+function actualizarProgreso(){
+    const totalParejas = total || 1;
+    const porcentaje = Math.min(100, Math.round((aciertos / totalParejas) * 100));
+    document.getElementById('progresoInterior').style.width = `${porcentaje}%`;
+}
+
+function inicializarSelectorNivel(){
+    const selector=document.getElementById("nivelSelector");
+    const trigger=document.getElementById("nivelTrigger");
+    const select=document.getElementById("nivel");
+    const texto=document.getElementById("nivelTexto");
+
+    function actualizarTexto(){
+        const opcion=Array.from(select.options).find(op=>op.value===select.value);
+        texto.textContent=opcion ? opcion.text : "Fácil (6 parejas)";
+    }
+
+    trigger.addEventListener("click", ()=>{
+        selector.classList.toggle("abierto");
+        trigger.setAttribute("aria-expanded", selector.classList.contains("abierto") ? "true" : "false");
+    });
+
+    document.querySelectorAll(".nivel-option").forEach(boton=>{
+        boton.addEventListener("click", ()=>{
+            select.value=boton.dataset.value;
+            actualizarTexto();
+            selector.classList.remove("abierto");
+            trigger.setAttribute("aria-expanded", "false");
+        });
+    });
+
+    document.addEventListener("click", (event)=>{
+        if(!selector.contains(event.target)){
+            selector.classList.remove("abierto");
+            trigger.setAttribute("aria-expanded", "false");
+        }
+    });
+
+    actualizarTexto();
+}
+
+inicializarSelectorNivel();
 
 /* ✅ BASE COMPLETA */
 let baseDatos = [
@@ -237,11 +494,13 @@ function iniciarJuego(){
     document.getElementById("final").style.display="none";
 
     movimientos=0;
+    document.getElementById('progresoInterior').style.width='0%';
     puntos=0;
     intentos=0;
     aciertos=0;
 
     actualizarInfo();
+    actualizarProgreso();
 
     let nivel=parseInt(document.getElementById("nivel").value);
     total=nivel;
@@ -260,8 +519,16 @@ function iniciarJuego(){
 
     cartas=mezclar(cartas);
 
-    let cols = Math.ceil(Math.sqrt(cartas.length));
-    let filas = Math.ceil(cartas.length / cols);
+    let cols = 4;
+    let filas = 6;
+
+    if (nivel === 6) {
+        cols = 3;
+        filas = 4;
+    } else if (nivel === 24) {
+        cols = 6;
+        filas = 8;
+    }
 
     tablero.style.gridTemplateColumns=`repeat(${cols},1fr)`;
     tablero.style.gridTemplateRows=`repeat(${filas},1fr)`;
@@ -273,9 +540,14 @@ function iniciarJuego(){
         carta.dataset.valor=dato.valor;
         carta.dataset.pareja=dato.pareja;
 
-        let texto=document.createElement("span");
+        let dorso=document.createElement("div");
+        dorso.className="dorso";
+
+        let texto=document.createElement("div");
+        texto.className="cara";
         texto.textContent=dato.valor;
 
+        carta.appendChild(dorso);
         carta.appendChild(texto);
         carta.onclick=()=>girar(carta);
 
@@ -289,6 +561,7 @@ function girar(carta){
     if(carta.classList.contains("girada")) return;
 
     carta.classList.add("girada");
+    reproducirSonido('giro');
     movimientos++;
     actualizarInfo();
 
@@ -309,6 +582,8 @@ function comprobar(){
     if(primera.dataset.pareja===segunda.dataset.valor){
         puntos+=10;
         aciertos++;
+        reproducirSonido('acierto');
+        actualizarProgreso();
 
         setTimeout(()=>{
             primera.style.visibility="hidden";
@@ -324,6 +599,7 @@ function comprobar(){
     } else {
 
         puntos-=3;
+        reproducirSonido('error');
 
         setTimeout(()=>{
             primera.classList.remove("girada");
