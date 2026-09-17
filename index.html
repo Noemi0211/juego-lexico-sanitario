@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Juego de léxico sanitario</title>
 
 <style>
@@ -246,9 +247,12 @@ select:hover {
     color: #0f172a;
     text-align: center;
     padding: 6px;
-    font-size: clamp(0.55rem, 1.1vw, 0.8rem);
+    font-size: var(--fuente, 0.8rem);
     font-weight: 700;
     line-height: 1.15;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
     box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
     opacity: 0;
     z-index: 1;
@@ -591,6 +595,10 @@ function iniciarJuego(){
 
     tablero.style.setProperty('--ancho', anchoCarta + 'px');
     tablero.style.setProperty('--alto', altoCarta + 'px');
+
+    /* Fuente proporcional al tamaño de la carta, con mínimo legible */
+    const tamanoFuente = Math.max(8, Math.min(15, anchoCarta * 0.18));
+    tablero.style.setProperty('--fuente', Math.round(tamanoFuente * 10) / 10 + 'px');
 
     const filasDOM = [];
     patron.forEach(n => {
