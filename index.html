@@ -180,26 +180,40 @@ select:hover {
 
 /* TABLERO */
 #tablero {
-    display: grid;
-    height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
     max-width: 960px;
+    height: calc(100vh - 130px);
     margin: auto;
-    gap: 10px;
-    padding: 12px;
+    padding: 16px 12px;
+    overflow-y: auto;
     border-radius: 22px;
     background: rgba(255,255,255,0.08);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 16px 40px rgba(0,0,0,0.24);
 }
 
+.fila {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+}
+
 /* CARTAS */
 .carta {
-    border-radius: 16px;
-    border: 2px solid rgba(255,255,255,0.18);
+    width: var(--ancho, 96px);
+    height: var(--alto, 88px);
+    border-radius: 14px;
+    border: 2px solid rgba(255,255,255,0.22);
     position: relative;
     cursor: pointer;
     overflow: hidden;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.26);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2);
     background: transparent;
+    flex-shrink: 0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .carta:not(.girada):hover {
@@ -231,10 +245,10 @@ select:hover {
     background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
     color: #0f172a;
     text-align: center;
-    padding: 8px;
-    font-size: 0.8rem;
+    padding: 6px;
+    font-size: clamp(0.55rem, 1.1vw, 0.8rem);
     font-weight: 700;
-    line-height: 1.2;
+    line-height: 1.15;
     box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
     opacity: 0;
     z-index: 1;
@@ -273,6 +287,34 @@ select:hover {
 #final img {
     width: 100px;
     margin-bottom: 10px;
+}
+
+/* MÓVIL: cabecera compacta para dejar más espacio al tablero */
+@media (max-width: 600px) {
+    #juego {
+        padding: 8px;
+    }
+    #info {
+        margin-bottom: 8px;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+    .progreso {
+        margin-bottom: 8px;
+        padding: 6px 10px;
+    }
+    #tablero {
+        height: calc(100vh - 118px);
+        padding: 10px 8px;
+        gap: 6px;
+    }
+    .fila {
+        gap: 6px;
+    }
+    #final {
+        width: 92vw;
+        max-height: 85vh;
+    }
 }
 </style>
 </head>
@@ -519,40 +561,69 @@ function iniciarJuego(){
 
     cartas=mezclar(cartas);
 
-    let cols = 4;
-    let filas = 6;
-
+    /* Patrones piramidales estilo Mahjong: filas que se ensanchan hacia el centro */
+    const vistaMovil = window.innerWidth < 640;
+    let patron;
     if (nivel === 6) {
-        cols = 3;
-        filas = 4;
-    } else if (nivel === 24) {
-        cols = 6;
-        filas = 8;
+        patron = [2,3,4,3];
+    } else if (nivel === 12) {
+        patron = [4,5,6,5,4];
+    } else {
+        patron = vistaMovil ? [4,5,6,6,6,6,6,5,4] : [4,5,7,8,8,7,5,4];
     }
 
-    tablero.style.gridTemplateColumns=`repeat(${cols},1fr)`;
-    tablero.style.gridTemplateRows=`repeat(${filas},1fr)`;
+    /* Tamaño dinámico de cartas para que todo el montículo quepa en pantalla */
+    const maxEnFila = Math.max(...patron);
+    const anchoDisponible = Math.min(tablero.clientWidth, 960) - 24;
+    const gapDisponible = vistaMovil ? 6 : 8;
+    let anchoCarta = Math.max(46, Math.min(
+        (anchoDisponible - (maxEnFila - 1) * gapDisponible) / maxEnFila,
+        Math.floor((window.innerHeight - 220) / patron.length - gapDisponible)
+    ));
 
-    cartas.forEach(dato=>{
-        let carta=document.createElement("div");
-        carta.className="carta";
+    /* Si aun así la fila más ancha no cabe, se encogen las cartas para evitar desbordes */
+    const espacioNecesario = maxEnFila * anchoCarta + (maxEnFila - 1) * gapDisponible;
+    if (espacioNecesario > anchoDisponible) {
+        anchoCarta = Math.max(30, Math.floor((anchoDisponible - (maxEnFila - 1) * gapDisponible) / maxEnFila));
+    }
 
-        carta.dataset.valor=dato.valor;
-        carta.dataset.pareja=dato.pareja;
+    const altoCarta = Math.max(40, Math.round(anchoCarta * 0.92));
 
-        let dorso=document.createElement("div");
-        dorso.className="dorso";
+    tablero.style.setProperty('--ancho', anchoCarta + 'px');
+    tablero.style.setProperty('--alto', altoCarta + 'px');
 
-        let texto=document.createElement("div");
-        texto.className="cara";
-        texto.textContent=dato.valor;
-
-        carta.appendChild(dorso);
-        carta.appendChild(texto);
-        carta.onclick=()=>girar(carta);
-
-        tablero.appendChild(carta);
+    const filasDOM = [];
+    patron.forEach(n => {
+        const fila = document.createElement("div");
+        fila.className = "fila";
+        tablero.appendChild(fila);
+        filasDOM.push(fila);
     });
+
+    let indice = 0;
+    for (let i = 0; i < patron.length; i++) {
+        for (let j = 0; j < patron[i]; j++) {
+            const dato = cartas[indice++];
+            let carta = document.createElement("div");
+            carta.className = "carta";
+
+            carta.dataset.valor = dato.valor;
+            carta.dataset.pareja = dato.pareja;
+
+            let dorso = document.createElement("div");
+            dorso.className = "dorso";
+
+            let texto = document.createElement("div");
+            texto.className = "cara";
+            texto.textContent = dato.valor;
+
+            carta.appendChild(dorso);
+            carta.appendChild(texto);
+            carta.onclick = () => girar(carta);
+
+            filasDOM[i].appendChild(carta);
+        }
+    }
 }
 
 function girar(carta){
