@@ -27,13 +27,21 @@ body {
 /* INICIO */
 #inicio {
     text-align: center;
-    padding: 40px 24px;
+    padding: 40px 24px 64px;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    gap: 14px;
+}
+
+.inicio-inner {
+    margin: auto;
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
 }
 
 #inicio h1 {
@@ -134,6 +142,138 @@ select:hover {
     box-shadow: 0 12px 28px rgba(0,0,0,0.22);
 }
 
+/* USUARIO */
+.usuario {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.usuario input {
+    border: none;
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    background: rgba(255,255,255,0.14);
+    color: var(--text);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.16);
+    max-width: 200px;
+}
+
+.usuario input::placeholder {
+    color: rgba(203,213,225,0.7);
+}
+
+.usuario-nombre {
+    font-weight: 600;
+}
+
+.btn-secundario {
+    background: rgba(255,255,255,0.12);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18), 0 4px 12px rgba(0,0,0,0.12);
+    padding: 8px 16px;
+    font-size: 0.85rem;
+}
+
+.btn-secundario:hover {
+    transform: translateY(-1px);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.24), 0 8px 16px rgba(0,0,0,0.18);
+}
+
+/* INSTRUCCIONES */
+.instrucciones {
+    width: 100%;
+    text-align: left;
+    background: rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 16px 20px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.instrucciones h3 {
+    margin: 0 0 8px;
+    text-align: center;
+}
+
+.instrucciones p {
+    color: var(--text);
+    margin: 0 0 8px;
+}
+
+.instrucciones ul {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--text);
+}
+
+.instrucciones li {
+    margin: 6px 0;
+    line-height: 1.4;
+}
+
+.instrucciones b {
+    color: #fff;
+}
+
+/* HISTORIAL */
+.historial {
+    width: 100%;
+    background: rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 14px 16px;
+    text-align: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.historial h3 {
+    margin: 0 0 10px;
+    font-size: 1rem;
+}
+
+.historial table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+
+.historial th,
+.historial td {
+    padding: 6px 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.historial th {
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.historial-vacio {
+    color: var(--muted);
+    margin: 0;
+}
+
+.historial-scroll {
+    overflow-x: auto;
+}
+
+/* PIE DE PÁGINA */
+.pie {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    text-align: center;
+    font-size: 0.7rem;
+    color: rgba(203, 213, 225, 0.55);
+    padding: 5px 10px;
+    background: linear-gradient(transparent, rgba(2,6,23,0.85));
+    pointer-events: none;
+    z-index: 5;
+}
+
 /* JUEGO */
 #juego {
     display: none;
@@ -186,7 +326,7 @@ select:hover {
     align-items: center;
     gap: 8px;
     max-width: 960px;
-    height: calc(100vh - 130px);
+    height: calc(100vh - 158px);
     margin: auto;
     padding: 16px 12px;
     overflow-y: auto;
@@ -308,7 +448,7 @@ select:hover {
         padding: 6px 10px;
     }
     #tablero {
-        height: calc(100vh - 118px);
+        height: calc(100vh - 146px);
         padding: 10px 8px;
         gap: 6px;
     }
@@ -327,11 +467,15 @@ select:hover {
 
 <!-- INICIO -->
 <div id="inicio">
+<div class="inicio-inner">
+
 <h1>Juego de léxico sanitario</h1>
 
 <img src="logo.png" class="logo">
 
 <p>Empareja elementos léxicos con su significado</p>
+
+<div class="usuario" id="areaUsuario"></div>
 
 <div class="nivel-selector" id="nivelSelector">
     <button id="nivelTrigger" class="nivel-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
@@ -351,8 +495,24 @@ select:hover {
     <option value="24">Difícil (24 parejas)</option>
 </select>
 
-<br><br>
 <button onclick="iniciarJuego()">🎮 Jugar</button>
+
+<div class="instrucciones">
+    <h3>¿Cómo se juega?</h3>
+    <p>Este juego te ayuda a dominar el <b>léxico sanitario</b>: empareja cada prefijo o sufijo médico con su significado.</p>
+    <ul>
+        <li><b>Objetivo:</b> girar las cartas de dos en dos hasta emparejarlas todas.</li>
+        <li><b>Memoriza:</b> al empezar verás todas las cartas <b>5 segundos boca arriba</b>. Aprovecha el tiempo para retenerlas.</li>
+        <li><b>Puntos:</b> cada acierto suma <b>+10</b>; cada fallo resta <b>3</b>.</li>
+        <li><b>Niveles:</b> Fácil (6 parejas), Medio (12) y Difícil (24).</li>
+        <li><b>Consejo:</b> empieza por Fácil y repite los niveles: al terminar revisa el repaso final y verás cómo sube tu acierto.</li>
+        <li><b>Tus resultados:</b> escribe tu nombre para que el juego guarde tu historial de partidas.</li>
+    </ul>
+</div>
+
+<div class="historial" id="historial"></div>
+
+</div>
 </div>
 
 <!-- JUEGO -->
@@ -374,6 +534,8 @@ Puntos: <span id="puntos">0</span>
 <!-- FINAL -->
 <div id="final"></div>
 
+<footer class="pie">Material creado para el aula de TES por Noemí Celaya Mingot. Con licencia CC BY-NC-SA 4.0</footer>
+
 <script>
 
 let primera=null;
@@ -389,6 +551,11 @@ let intentos=0;
 
 let usadas=[];
 let audioContext=null;
+
+let claveUsuario='lexicoUsuario';
+let claveHistorial='lexicoHistorial';
+let usuarioActual=localStorage.getItem(claveUsuario)||'';
+let intervaloCuentaAtras=null;
 
 function reproducirSonido(tipo){
     try {
@@ -456,6 +623,9 @@ function inicializarSelectorNivel(){
 }
 
 inicializarSelectorNivel();
+
+pintarAreaUsuario();
+pintarHistorial();
 
 /* ✅ BASE COMPLETA */
 let baseDatos = [
@@ -532,6 +702,18 @@ let baseDatos = [
 
 function iniciarJuego(){
 
+    if(!usuarioActual){
+        const campo=document.getElementById("campoUsuario");
+        if(campo) campo.focus();
+        alert("Escribe tu nombre para poder guardar tus resultados.");
+        return;
+    }
+
+    if(intervaloCuentaAtras){
+        clearInterval(intervaloCuentaAtras);
+        intervaloCuentaAtras=null;
+    }
+
     document.getElementById("inicio").style.display="none";
     document.getElementById("juego").style.display="block";
 
@@ -544,6 +726,9 @@ function iniciarJuego(){
     puntos=0;
     intentos=0;
     aciertos=0;
+    primera=null;
+    segunda=null;
+    bloqueado=false;
 
     actualizarInfo();
     actualizarProgreso();
@@ -609,6 +794,7 @@ function iniciarJuego(){
     });
 
     let indice = 0;
+    const todasLasCartas = [];
     for (let i = 0; i < patron.length; i++) {
         for (let j = 0; j < patron[i]; j++) {
             const dato = cartas[indice++];
@@ -629,9 +815,34 @@ function iniciarJuego(){
             carta.appendChild(texto);
             carta.onclick = () => girar(carta);
 
+            todasLasCartas.push(carta);
             filasDOM[i].appendChild(carta);
         }
     }
+
+    /* Vista previa: 5 segundos boca arriba */
+    let barraInfo = document.getElementById("info");
+    const infoOriginal = barraInfo.innerHTML;
+    todasLasCartas.forEach(carta => carta.classList.add("girada"));
+    barraInfo.innerHTML = '👀 Memoriza las cartas: <span id="cuentaAtras">5</span> s';
+    bloqueado = true;
+
+    let segundos = 5;
+    intervaloCuentaAtras = setInterval(() => {
+        segundos--;
+        if (segundos > 0) {
+            const etiqueta = document.getElementById("cuentaAtras");
+            if (etiqueta) etiqueta.textContent = segundos;
+            return;
+        }
+        clearInterval(intervaloCuentaAtras);
+        intervaloCuentaAtras = null;
+        todasLasCartas.forEach(carta => carta.classList.remove("girada"));
+        barraInfo.innerHTML = infoOriginal;
+        bloqueado = false;
+        actualizarInfo();
+        actualizarProgreso();
+    }, 1000);
 }
 
 function girar(carta){
@@ -701,7 +912,111 @@ function actualizarInfo(){
     document.getElementById("puntos").textContent=puntos;
 }
 
+function pintarAreaUsuario(){
+    const area=document.getElementById("areaUsuario");
+    if(!area) return;
+    if(usuarioActual){
+        area.innerHTML=`<span class="usuario-nombre">👋 Hola, <b>${usuarioActual}</b></span>
+        <button type="button" class="btn-secundario" onclick="cambiarUsuario()">Cambiar de usuario</button>`;
+        return;
+    }
+    area.innerHTML=`<input id="campoUsuario" maxlength="24" placeholder="¿Cómo te llamas?" aria-label="Nombre del jugador">
+    <button type="button" onclick="guardarUsuario()">Entrar</button>`;
+    const campo=document.getElementById("campoUsuario");
+    if(campo) campo.addEventListener("keydown", (ev)=> { if(ev.key==="Enter") guardarUsuario(); });
+}
+
+function guardarUsuario(){
+    const campo=document.getElementById("campoUsuario");
+    if(!campo) return;
+    const nombre=campo.value.trim();
+    if(!nombre){
+        campo.focus();
+        return;
+    }
+    usuarioActual=nombre;
+    localStorage.setItem(claveUsuario, usuarioActual);
+    pintarAreaUsuario();
+    pintarHistorial();
+}
+
+function cambiarUsuario(){
+    usuarioActual="";
+    localStorage.removeItem(claveUsuario);
+    pintarAreaUsuario();
+    pintarHistorial();
+}
+
+function obtenerHistorial(){
+    try {
+        const datos=JSON.parse(localStorage.getItem(claveHistorial)||"[]");
+        return Array.isArray(datos) ? datos : [];
+    } catch(e) {
+        return [];
+    }
+}
+
+function guardarResultado(){
+    if(!usuarioActual) return;
+    const nombreNivel={6:"Fácil",12:"Medio",24:"Difícil"}[total]||total;
+    const historial=obtenerHistorial();
+    historial.push({
+        usuario: usuarioActual,
+        fecha: new Date().toLocaleDateString("es-ES"),
+        hora: new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}),
+        nivel: nombreNivel,
+        puntos: puntos,
+        giros: movimientos,
+        acierto: intentos ? Math.round((aciertos/intentos)*100) : 0
+    });
+    localStorage.setItem(claveHistorial, JSON.stringify(historial));
+}
+
+function pintarHistorial(){
+    const contenedor=document.getElementById("historial");
+    if(!contenedor) return;
+    if(!usuarioActual){
+        contenedor.innerHTML="";
+        return;
+    }
+    const partidas=obtenerHistorial()
+        .filter(p=>p.usuario===usuarioActual)
+        .slice()
+        .reverse()
+        .slice(0,15);
+
+    if(!partidas.length){
+        contenedor.innerHTML="<h3>📊 Mis resultados</h3><p class='historial-vacio'>Aún no tienes partidas guardadas.</p>";
+        return;
+    }
+
+    const filas=partidas.map(p=>`<tr>
+        <td>${p.fecha}<br>${p.hora}</td>
+        <td>${p.nivel}</td>
+        <td>${p.puntos} pts</td>
+        <td>${p.giros}</td>
+        <td>${p.acierto}%</td>
+    </tr>`).join("");
+
+    contenedor.innerHTML=`<h3>📊 Mis resultados</h3>
+        <div class="historial-scroll">
+        <table>
+            <thead><tr><th>Fecha</th><th>Nivel</th><th>Puntos</th><th>Giros</th><th>Acierto</th></tr></thead>
+            <tbody>${filas}</tbody>
+        </table>
+        </div>
+        <br><button type="button" class="btn-secundario" onclick="borrarHistorial()">Borrar mi historial</button>`;
+}
+
+function borrarHistorial(){
+    const historial=obtenerHistorial().filter(p=>p.usuario!==usuarioActual);
+    localStorage.setItem(claveHistorial, JSON.stringify(historial));
+    pintarHistorial();
+}
+
 function finalJuego(){
+
+    guardarResultado();
 
     let final=document.getElementById("final");
 
